@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<!-- don't forget to import bootstrap -->
+
+<body>
+    <div class="row rowDe">
+        <div class="blogTextDescriptif">
+
+            <!-- Blog-->
+            <section class="section blog" id="blog">
+                <div class="container">
+
+                    <!---->
+                    <div class="section-content" id="blogContent">
+                        <div class="row" id="jsonContent"></div>
+                    </div>
+                    <!-- /#blogContent-->
+                    <div class="text-center">
+                        <a target="_blank" class="btn btn-dark" id="loadBlogPosts" href="https://www.medium.com/@matboud">View All
+                            <span class="fa fa-angle-double-right"></span>
+                        </a>
+                    </div>
+                </div>
+                <!-- /.container-->
+            </section>
+        </div>
+    </div>
+</body>
+
+<script>
+
+    $(function () {
+        var $content = $("#jsonContent");
+        // for exemple here i ll bring data from my midium account
+        var feedMe = {
+            rss_url: "https://medium.com/feed/@matboud"
+        };
+        $.get("https://api.rss2json.com/v1/api.json", feedMe, function (response) {
+            if (response.status == "ok") {
+                var feed_out = "";
+                $.each(response.items, function (k, item) {
+                    var texto;
+                    if (k < 3) {
+                        texto = "";
+                    }
+                    feed_out += '<div class="col-sm-12 col-md-6' + texto + '">';
+                    feed_out += '<div class="blog-post"><header>';
+                    //   feed_out += '<h4 class="date">' + $.format.Date(item.pubDate, "dd<br>MMM") + "</h4>";
+
+                    var tagIndex = item.description.indexOf("<img"); // Find where the img tag starts
+                    var srcIndex =
+                        item.description.substring(tagIndex).indexOf("src=") + tagIndex; // Find where the src attribute starts
+                    var srcStart = srcIndex + 5; // Find where the actual image URL starts; 5 for the length of 'src="'
+                    var srcEnd =
+                        item.description.substring(srcStart).indexOf('"') + srcStart; // Find where the URL ends
+                    var src = item.description.substring(srcStart, srcEnd); // Extract just the URL
+                    feed_out +=
+                        '<div class="blog-element"><img class="img-responsive" src="' +
+                        src +
+                        '" width="360px" height="240px"></div></header>';
+                    feed_out +=
+                        '<div class="blog-content"><h4><a href="' +
+                        item.link +
+                        '">' +
+                        item.title +
+                        "</a></h4>";
+                    feed_out +=
+                        '<div class="post-meta"><span>By ' + item.author + "</span></div>";
+                    var yourString = item.description.replace(/<img[^>]*>/g, ""); //replace with your string.
+                    var maxLength = 120; // maximum number of characters to extract
+                    //trim the string to the maximum length
+                    var trimmedString = yourString.substr(0, maxLength);
+                    //re-trim if we are in the middle of a word
+                    trimmedString = trimmedString.substr(
+                        0,
+                        Math.min(trimmedString.length, trimmedString.lastIndexOf(" "))
+                    );
+                    feed_out += "<p>" + trimmedString + "...</p>";
+                    feed_out += "</div></div></div>";
+                    return k < 10;
+                });
+                $content.html(feed_out);
+            }
+        });
+    });
+
+</script>
+
+</html>
